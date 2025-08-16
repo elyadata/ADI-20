@@ -1,0 +1,35 @@
+seed: 42 
+hours_per_dialect: 53
+
+input_manifest_paths:
+  adi17: manifests/adi17.csv
+  adi17_medium: manifests/adi17_medium_53h.csv
+  jordanian: ../<dataset>/jordanian_manifest_segmented.csv
+  sudanese: ../<dataset>/sudanese_manifest_segmented.csv
+
+  # ADI-20
+  tunisian: ../<dataset>/tunisian_adi_train_checked.csv
+  msa: ../<dataset>/msa_ADI_train_checked.csv
+  bahraini: ../<dataset>/train_checked.csv
+
+dev_manifests:
+  adi17: ../<dataset>/adi17_dev.csv
+  tunisian: ../<dataset>/tunisian_adi_dev_checked.csv
+  msa: ../<dataset>/adi5_dev_checked.csv
+  bahraini: /dev_checked.csv
+
+test_manifests:
+  adi17: ../<dataset>/adi17_test.csv
+  tunisian: ../<dataset>/tunisian_adi_test_checked.csv
+  msa: ../<dataset>/adi5_test_checked.csv
+  bahraini: ../<dataset>/test_checked.csv
+  
+output_manifest_paths:
+  adi17_medium: ../<dataset>/manifests/adi17_medium_53h.csv
+  adi20_medium: ../<dataset>/manifests/adi20_medium_53h.csv
+  adi20: ../<dataset>/manifests/adi20.csv
+  # Eval manifests
+  adi20_dev: ../<dataset>/manifests/adi20_dev.csv
+  adi20_test: ../<dataset>/manifests/adi20_test.csv
+
+

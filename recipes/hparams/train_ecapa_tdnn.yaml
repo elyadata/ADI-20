@@ -1,0 +1,158 @@
+# #################################
+# Training ECAPA-TDNN embeddings for Arabic Dialect Identification (ADI).
+#
+# Authors:
+#  * Haroun Elleuch
+# #################################
+
+# Seed needs to be set at top of yaml, before objects with parameters are made
+seed: 1986
+__set_seed: !apply:torch.manual_seed [!ref <seed>]
+
+# Set up folders for reading from and writing to
+# Dataset will be downloaded to the `data_folder`
+output_folder: !ref results/ECAPA-TDNN/<seed>
+save_folder: !ref <output_folder>/save
+manifest_folder: ../../dataset/manifest
+train_log: !ref <output_folder>/train_log.txt
+train_csv: !ref <manifest_folder>/adi17_mini_v2.csv
+dev_csv: !ref <manifest_folder>/adi17_dev.csv
+test_csv: !ref <manifest_folder>/adi17_test.csv
+fewer_eval_classes: false
+ckpt_interval_minutes: 10 # save checkpoint every N min
+
+# skip_prep:  # TODO: integrate data prep pipeline in train script
+
+# The train logger writes training statistics to a file, as well as stdout.
+train_logger: !new:speechbrain.utils.train_logger.FileTrainLogger
+  save_file: !ref <train_log>
+
+metrics_log_dir: !ref <output_folder>/metrics/
+
+error_stats: !name:speechbrain.utils.metric_stats.MetricStats
+  metric: !name:speechbrain.nnet.losses.classification_error
+    reduction: batch
+# classification_stats: !name:speechbrain.utils.metric_stats.ClassificationStats
+acc_computer: !name:speechbrain.utils.Accuracy.AccuracyStats
+  ####################### Training Parameters ####################################
+
+  # Feature parameters btw: 40 - 80
+
+
+n_mels: 80
+sample_rate: 16000
+number_of_epochs: 100
+train_batch_size: 16
+eval_batch_size: 4
+n_languages: 17
+emb_dim: 192 # dimensionality of the embeddings
+emb_channels: [1024, 1024, 1024, 1024, 3072]
+emb_attention_channels: 128
+
+# Dataloaders
+num_workers: 4
+drop_last: True
+train_dataloader_options:
+  num_workers: !ref <num_workers>
+  batch_size: !ref <train_batch_size>
+  drop_last: !ref <drop_last>
+  shuffle: True
+
+test_dataloader_options:
+  num_workers: !ref <num_workers>
+  batch_size: !ref <eval_batch_size>
+  shuffle: True
+
+############################## Augmentations ###################################
+
+# Speed perturbation
+speed_perturb: !new:speechbrain.augment.time_domain.SpeedPerturb
+  orig_freq: !ref <sample_rate>
+
+# Feature extraction
+compute_features: !new:speechbrain.lobes.features.Fbank
+  n_mels: !ref <n_mels>
+
+# Mean and std normalization of the input features
+mean_var_norm_input: !new:speechbrain.processing.features.InputNormalization
+  norm_type: sentence
+  std_norm: False
+
+############################## Models ##########################################
+
+# Embedding Model
+embedding_model: !new:speechbrain.lobes.models.ECAPA_TDNN.ECAPA_TDNN
+  input_size: !ref <n_mels>
+  activation: !name:torch.nn.LeakyReLU
+  channels: !ref <emb_channels>
+  kernel_sizes: [5, 3, 3, 3, 1]
+  dilations: [1, 2, 3, 4, 1]
+  attention_channels: !ref <emb_attention_channels>
+  lin_neurons: !ref <emb_dim>
+
+# Classifier based on cosine distance
+classifier: !new:speechbrain.lobes.models.ECAPA_TDNN.Classifier
+  input_size: !ref <emb_dim>
+  out_neurons: !ref <n_languages>
+
+# The first object passed to the Brain class is this "Epoch Counter"
+# which is saved by the Checkpointer so that training can be resumed
+# if it gets interrupted at any point.
+epoch_counter: !new:speechbrain.utils.epoch_loop.EpochCounter
+  limit: !ref <number_of_epochs>
+
+# Objects in "modules" dict will have their parameters moved to the correct
+# device, as well as having train()/eval() called on them by the Brain class.
+modules:
+  compute_features: !ref <compute_features>
+  embedding_model: !ref <embedding_model>
+  mean_var_norm_input: !ref <mean_var_norm_input>
+  classifier: !ref <classifier>
+
+# Additive Angular Margin
+compute_cost: !new:speechbrain.nnet.losses.LogSoftmaxWrapper
+  loss_fn: !new:speechbrain.nnet.losses.AdditiveAngularMargin
+    margin: 0.2
+    scale: 30
+
+# Learning rates
+lr: 0.0001
+lr_final: 0.00001
+
+# This optimizer will be constructed by the Brain class after all parameters
+# are moved to the correct device. Then it will be added to the checkpointer.
+opt_class: !name:torch.optim.Adam
+  lr: !ref <lr>
+  weight_decay: 0.000002
+
+# Linear lr decay
+lr_annealing: !new:speechbrain.nnet.schedulers.LinearScheduler
+  initial_value: !ref <lr>
+  final_value: !ref <lr_final>
+  epoch_count: !ref <number_of_epochs>
+
+############################## Logging and Pretrainer ##########################
+
+# This object is used for saving the state of training both so that it
+# can be resumed if it gets interrupted, and also so that the best checkpoint
+# can be later loaded for evaluation or inference.
+checkpointer: !new:speechbrain.utils.checkpoints.Checkpointer
+  checkpoints_dir: !ref <save_folder>
+  recoverables:
+    normalizer_input: !ref <mean_var_norm_input>
+    embedding_model: !ref <embedding_model>
+    classifier: !ref <classifier>
+    counter: !ref <epoch_counter>
+
+# Load pretrained embedding module
+# Note: in this case, we pretrain with the ECAPA-TDNN model trained on voxceleb
+# for speaker-id (this leads to a performance improvement).
+embedding_model_path: speechbrain/spkrec-ecapa-voxceleb/embedding_model.ckpt
+
+# Pretrained ECAPA embeddings from SpeakerID on VoxCeleb
+pretrainer: !new:speechbrain.utils.parameter_transfer.Pretrainer
+  collect_in: !ref <save_folder>
+  loadables:
+    embedding_model: !ref <embedding_model>
+  paths:
+    embedding_model: !ref <embedding_model_path>
