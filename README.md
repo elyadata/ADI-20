@@ -44,6 +44,10 @@ Run the preprocessing script to segment and prepare the audio files:
 python data_preparation/preprocess.py --dataset_path /path/to/data
 ```
 
+### Download Trained Models
+We share our best model overall: `Whisper-large-v3 Encoder with Attention Pooling (Frozen lower layers + data augmentation)` trained on `ADI-20-53h` on HuggingFace [here](https://huggingface.co/Elyadata/ADI-whisper-ADI20).  
+We also make available our best perforing model trained on ADI-17-full on HuggingFace [here](https://huggingface.co/Elyadata/ADI-whisper-ADI17).  
+
 ### Training a Model
 To train a dialect classifier:
 ```bash
