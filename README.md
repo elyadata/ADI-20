@@ -32,6 +32,8 @@ pip install -r requirements.txt
 ## Dataset Preparation
 The project uses the **ADI-17** and **ADI-20** datasets, which consist of Arabic dialect speech segments. Ensure that you replace the placeholder in the manifest CSVs with the location of the datasets you have downloaded.  
 
+Pre-made manifests are available to downoad for your convenience at this [link](https://elyadata-my.sharepoint.com/:f:/p/haroun_elleuch/ErGuqCu8uXBBu0dSQu_WwmsBxwdPWoQyWfHQ67H7xav2uw?e=nk559T). All utterance segmentation is already prepared.
+
 For licencing reasons, we do not share the audio files of the dataset. Instead, you can use the IDs of the YouTube videos to download them yourself. Only the files are needed as the segmentation and labelling of the audios are already done in the CSV manifests.  
 Make sure to resample all your files to mono 16khz wav format.
 
