@@ -83,6 +83,7 @@ class WhisperDialectClassifier(Pretrained):
         embeddings = self.mods.output_mlp(embeddings)
         out_prob = self.hparams.log_softmax(embeddings)
         score, index = torch.max(out_prob, dim=-1)
+        self.hparams.label_encoder.expect_len(self.hparams.n_languages)
         text_lab = self.hparams.label_encoder.decode_torch(index)
         return out_prob, score, index, text_lab
 
