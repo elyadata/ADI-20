@@ -18,7 +18,7 @@ Repository structure:
 ```
 
 ## Download Trained Models
-We share our best model overall: `Whisper-large-v3 Encoder with Attention Pooling (Frozen lower layers + data augmentation)` trained on `ADI-20-53h` on HuggingFace [here](https://huggingface.co/Elyadata/ADI-whisper-ADI20).  
+We share our best model overall: `Whisper-large-v3 Encoder with Attention Pooling (Frozen lower layers + data augmentation)` trained on `ADI-20-53h` on HuggingFace [here](https://huggingface.co/Elyadata/ADI-whisper-ADI20). 
 We also make available our best perforing model trained on ADI-17-full on HuggingFace [here](https://huggingface.co/Elyadata/ADI-whisper-ADI17).  
 
 ## Installation
@@ -34,6 +34,9 @@ pip install -r requirements.txt
 ```
 
 ## Dataset Preparation
+
+*Update 06/2026:* The ADI-20 dataset is now available on HuggingFace datasets [here](https://huggingface.co/datasets/ArabicSpeech/ADI20). It contains all the additinal material collected for ADI-20. Download it in addition to ADI-17 [here](https://huggingface.co/datasets/ArabicSpeech/ADI17) to obtain the full dataset.
+
 The project uses the **ADI-17** and **ADI-20** datasets, which consist of Arabic dialect speech segments. Ensure that you replace the placeholder in the manifest CSVs with the location of the datasets you have downloaded.  
 
 Pre-made manifests are available to downoad for your convenience at this [link](https://elyadata-my.sharepoint.com/:f:/p/haroun_elleuch/ErGuqCu8uXBBu0dSQu_WwmsBxwdPWoQyWfHQ67H7xav2uw?e=nk559T). All utterance segmentation is already prepared.
